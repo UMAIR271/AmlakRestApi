@@ -54,7 +54,7 @@ class listing(models.Model):
     (one, 'one'),
     (two, 'two'),
     (three, 'three'),
-    (four, 'three'),
+    (four, 'four'),
 
 
     )
@@ -124,6 +124,7 @@ class listing(models.Model):
     latitude = models.FloatField(max_length=300, null=True)
     longitude = models.FloatField(max_length=300, null=True)
     property_usage = models.CharField(max_length=13, choices=PROPERTY_USAGE, null=True)
+    cover_image = models.CharField(max_length=1000, null=True)
 
 
 
@@ -203,12 +204,6 @@ class Listing_Amenities(models.Model):
     listing = models.ForeignKey(listing, related_name="Amenities", on_delete=models.CASCADE)
     Amenities_ID = models.ForeignKey("Amenities", related_name="Amenities_ID",on_delete=models.CASCADE, null= True)
     Cration_Time = models.DateTimeField(auto_now_add=True)
-
-
-
-
-
-
 
 
 

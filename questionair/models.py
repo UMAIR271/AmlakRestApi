@@ -34,6 +34,8 @@ class interestedAnswer(models.Model):
 class interestedUser(models.Model):
     listing_id = models.ForeignKey(listing, related_name="interested_user", on_delete=models.CASCADE, null = True)
     interested_user_id = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="interested_user_id",  on_delete=models.CASCADE, null = True)
+    listing_owner_id = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="listing_owner_id",  on_delete=models.CASCADE, null = True)
+    is_request = models.BooleanField(default=False)
     match_ans = models.BooleanField(default=False)
 
 

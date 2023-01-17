@@ -41,10 +41,14 @@ urlpatterns = [
             path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
             path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
             path('loginapp/', include(('loginapp.urls', "loginapp"), namespace = "loginapp")),
+            path('social_auth/', include(('social_auth.urls', 'social_auth'),namespace="social_auth")),
             path('list/', include(('listing.urls', "listapi"), namespace = "listapi")),
             path('favourite/', include(('favourite.urls', "favourite"), namespace = "favourite")),
             path('questionair/', include(('questionair.urls', "questionair"), namespace = "questionair")),
             path('chat/', include(('chat.urls', "chat"), namespace = "chat")),
+            path('notification/', include(('Notifications.urls', "Notifications"), namespace = "Notifications")),
+            path('Appointment/', include(('Appointment.urls', "Appointment"), namespace = "Appointment")),
+            path('Admin/', include(('Adminpenel.urls', "Admin"), namespace = "Admin")),
             path('swagger/schema/', schema_view.with_ui('swagger',cache_timeout=0), name='schema-schema'),
 ])
     )

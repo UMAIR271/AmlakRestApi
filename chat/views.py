@@ -12,6 +12,7 @@ from django.http.response import JsonResponse, HttpResponse
 from django.http.response import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
+from Notifications.push_notification import Push_notifications
 from chat.models import Message                                                   # Our Message model
 from chat.serializers import * # Our Serializer Classes
 # Users View                                                    # Decorator to make the view csrf excempt.
@@ -85,7 +86,7 @@ class message_list(APIView):
         sender = request.user.id
         receiver = pk
         try:
-            messages = Message.objects.filter(sender = sender, receiver = receiver ) | Message.objects.filter(sender = receiver, receiver = sender)
+            messages = Message.objects.filter(sender = sender, receiver = receiver ).order_by("-timestamp") | Message.objects.filter(sender = receiver, receiver = sender).order_by('-timestamp')
             # print(messages)
             # print(type(messages))
             # print(sender)
@@ -119,6 +120,7 @@ class message_list(APIView):
 
         try:
             exit_message = Message.objects.filter(sender = sender,receiver =data['receiver']) | Message.objects.filter(sender = data['receiver'],receiver = sender)
+            recevier_user = User.objects.filter(id = data['receiver']).values().first()
             print(exit_message,"1")
             if exit_message:
                 # breakpoint()
@@ -156,24 +158,16 @@ class message_list(APIView):
                 if chat_serilizer.is_valid():
                     print("you")
                     chat_serilizer.save()
-            # query = Message.objects.create(snder = sender , recevier = data['receiver'] , socket_id = socket_id, message = data['message'])
-            # query.save()
-            # socket_id = chat_inbox.objects.filter(socket_id = socket_id)
-            # print(socket_id)
-            # print(var_1)
-            # var =(Message.objects.filter(sender = sender,receiver =data['receiver']) | Message.objects.filter(sender = data['receiver'],receiver = sender)).values()
-            # print(var)
+            username = recevier_user["username"]
+            title= "New Message Recevied"
+            body = f"{username} send you a message"
+            notification_data ={
+                "sender_id": sender,
+                "receiver_id": data['receiver'],
+            }
+            type = "chat"
+            Push_notifications(title, body, data['receiver'], type, notification_data)
         except:
             print("hellllllllllllllllllllllllllllllo")
-        # if (Message.objects.filter(sender = sender,receiver =data['receiver'])) |(Message.objects.filter(sender = data['receiver'],receiver = sender)) :
-        #     socket_id = 
-        #     Message.objects.create(snder = sender , recevier = data['receiver'] , socket_id = socket_id, message = data['message'])
-            
-        # else:
-        #         socket_id = uuid.uuid4()
-        #         Message.objects.create(snder = sender , recevier = data['receiver'] , socket_id = socket_id, message = data['message'])
-
-
-        
         return JsonResponse(request.data,status=201)
-        return JsonResponse(serializer.errors, status=400)
+        

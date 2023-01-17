@@ -7,7 +7,7 @@ def modify_input_for_multiple_files(id, image):
 def multiple_Amenaties(id,Amenities_id):
     dict = {}
     dict['listing'] = id
-    dict['Amenities_ID'] = Amenities_id
+    dict['Amenities_ID_id'] = Amenities_id
     return dict
 
 def multiple_property(id,property):

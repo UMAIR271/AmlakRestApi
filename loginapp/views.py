@@ -13,11 +13,14 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User
 from .utils import Util
 from drf_yasg.utils import swagger_auto_schema
+from .helper import setUseravalibilty
 from drf_yasg import openapi
 from django.contrib.sites.shortcuts import get_current_site
 from rest_framework.permissions import IsAuthenticated
 import jwt
 from django.conf import settings
+from social_auth.register import register_Apple_user
+from social_auth.serializers import AppleSocialAuthSerializer
 
 # generate token manually
 def get_tokens_for_user(user):
@@ -39,9 +42,11 @@ class UserRegistrationView(APIView):
                 user_data = serializer.data
                 user = User.objects.get(email = user_data['email'])
                 data = User.objects.filter(email = user_data['email']).values(
-                    'id', 'email','username','email_varified','is_active','created_at','updated_at','auth_provider', 'profile_image')
+                    'id', 'email','username','email_varified','is_active','created_at','updated_at','auth_provider', 'profile_image').first()
                 print(data)
                 token = get_tokens_for_user(user)
+                user_avalibilty = setUseravalibilty(data["id"])
+                print(user_avalibilty)
                 # data = {'to_email': user.email,'subject': 'Verify your email'}
                 # Util.send_email(data)
                 return Response({ "message": "Registraion success","token":token['access'],"user_obj":data}, status = status.HTTP_200_OK)
@@ -55,7 +60,7 @@ class UserRegistrationView(APIView):
         except Exception as e:
             print(e)
             print(type(e))
-            return Response({'error': e }, status = status.HTTP_404_NOT_FOUND)
+            return Response({'error': str(e) }, status = status.HTTP_404_NOT_FOUND)
 
 
 class SendOTP(APIView):
@@ -160,6 +165,7 @@ class UserLoginView(GenericAPIView):
         password = serializer.data.get("password")
         user =  authenticate(email=email, password=password)
         print(user)
+        print(type(user))
         if user is not None:
             user_object = User.objects.filter(email = email).values(
                     'id', 'email','username','email_varified','is_active','created_at','updated_at','auth_provider','profile_image')
@@ -179,6 +185,15 @@ class UserProfileView(APIView):
     parser_classes = (FormParser, MultiPartParser)
 
     def get(self, request, format = None):
+        user_id = self.request.query_params.get('user_id')
+        if user_id:
+            user_data = User.objects.filter(id = user_id).values('id', 'email','username','email_varified','is_active','created_at','updated_at','auth_provider', 'phone_number',"profile_image").first()
+            email = user_data['email']
+            user = User.objects.get(email = email)
+            serializer = self.serializer_class(user, context={"request": request})
+            data = serializer.data
+            return Response({'data':data ,'user_object':user_data}, status=status.HTTP_200_OK)
+
         serializer = self.serializer_class(request.user , context={"request": request})
         data = serializer.data
         email = data['email']
@@ -186,9 +201,9 @@ class UserProfileView(APIView):
         if not user:
                     return Response({ "message": "invalid Email", 'error': "invalid Email" }, status = status.HTTP_401_UNAUTHORIZED)
         user_object = User.objects.filter(email = email).values(
-                    'id', 'email','username','email_varified','is_active','created_at','updated_at','auth_provider', 'phone_number')
+                    'id', 'email','username','email_varified','is_active','created_at','updated_at','auth_provider', 'phone_number',"profile_image")
+        print(user_object)
         return Response({'data':data ,'user_object':user_object}, status=status.HTTP_200_OK)
-
 
 
 
@@ -290,16 +305,42 @@ class LogoutAPIView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class GoogleSocialAuthView(GenericAPIView):
+class AppleSocialAuthView(GenericAPIView):
 
-    serializer_class = GoogleSocialAuthSerializer
+    serializer_class = AppleSocialAuthSerializer
 
     def post(self, request):
         """
         POST with "auth_token"
         Send an idtoken as from google to get user information
         """
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        data = ((serializer.validated_data)['auth_token'])
-        return Response(data, status=status.HTTP_200_OK)
+        data = request.data
+        user_provider_id = data["socialUserId"]
+        provider = "apple"
+        profile_image="uploads/default_profile.jpeg"
+        if data["name"] and data["email"]:
+            name = data["name"]
+            print("allah ho ")
+            email = data["email"]
+            print(data)
+            data= register_Apple_user(user_provider_id, name , email, provider, profile_image)
+            return Response(data,status=status.HTTP_200_OK)
+        else:
+            if data["name"]:
+                name = data["name"]
+                email = user_provider_id + "@appleid.com"
+                data= register_Apple_user(user_provider_id, name , email, provider, profile_image)
+                return Response(data,status=status.HTTP_200_OK)
+            if data["email"]:
+                email = data["email"]
+                name = " "
+                data= register_Apple_user(user_provider_id, name , email, provider, profile_image)
+                return Response(data , status=status.HTTP_200_OK)
+            if not data["name"] and  not data["email"]:
+                email = user_provider_id + "@appleid.com"
+                name = " "
+                data= register_Apple_user(user_provider_id, name , email, provider, profile_image)
+                return Response(data,status=status.HTTP_200_OK)
+
+
+            

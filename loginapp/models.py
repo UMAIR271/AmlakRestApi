@@ -74,10 +74,8 @@ class User(AbstractBaseUser):
         max_length=255, blank=False,
         null=False, default=AUTH_PROVIDERS.get('email')
     )
-
-
+    user_provider_id = models.CharField(max_length=1000, null= True)
     objects = MyUserManager()
-
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 

@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 from datetime import timedelta
+from firebase_admin import initialize_app
+
 
 import os
 
@@ -29,6 +31,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -44,11 +47,15 @@ INSTALLED_APPS = [
     "corsheaders",
     'django_filters',
     'drf_yasg',
+    "Appointment",
     "listing",
+    "Adminpenel",
     "loginapp",
     "favourite",
     "questionair",
+    'Notifications',
     'social_django',
+    "fcm_django",
     'chat',
 ]
 
@@ -118,7 +125,9 @@ AUTH_PASSWORD_VALIDATORS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-     ]
+     ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 3
     #  'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
 }
 
@@ -167,7 +176,7 @@ DEFAULT_AUTO_FIELD='django.db.models.AutoField'
 
 #JWT
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'AUTH_TOKEN_CLASSES': (
         'rest_framework_simplejwt.tokens.AccessToken',
@@ -201,36 +210,39 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
 
-DJOSER = {
-    'LOGIN_FIELD': 'email',
-    'USER_CREATE_PASSWORD_RETYPE': True,
-    'USERNAME_CHANGED_EMAIL_CONFIRMATION': True,
-    'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
-    'SEND_CONFIRMATION_EMAIL': True,
-    'SET_USERNAME_RETYPE': True,
-    'SET_PASSWORD_RETYPE': True,
-    'PASSWORD_RESET_CONFIRM_URL': 'password/reset/confirm/{uid}/{token}',
-    'USERNAME_RESET_CONFIRM_URL': 'email/reset/confirm/{uid}/{token}',
-    'ACTIVATION_URL': 'activate/{uid}/{token}',
-    'SEND_ACTIVATION_EMAIL': True,
-    'SOCIAL_AUTH_TOKEN_STRATEGY': 'djoser.social.token.jwt.TokenStrategy',
-    'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': ['http://localhost:8000/google', 'http://localhost:8000/facebook'],
-    'SERIALIZERS': {
-        'user_create': 'accounts.serializers.UserCreateSerializer',
-        'user': 'accounts.serializers.UserCreateSerializer',
-        'current_user': 'accounts.serializers.UserCreateSerializer',
-        'user_delete': 'djoser.serializers.UserDeleteSerializer',
-    }
-}
-
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '[334221477270-2274l2jv3n6kjij5nh920hlp8bh06e4h.apps.googleusercontent.com]'
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '[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]'
-SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile', 'openid']
-SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ['first_name', 'last_name']
-
 PASSWORD_RESET_TIMEOUT = 900
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+# CORS_ALLOWED_ORIGINS = ["*"]
+
+
+# CORS_ORIGIN_WHITELIST = [
+#     "http://localhost:8080",
+#     "http://3.109.49.168"
+# ]
+
+FIREBASE_APP = initialize_app()
+
+
+FCM_DJANGO_SETTINGS = {
+     # an instance of firebase_admin.App to be used as default for all fcm-django requests
+     # default: None (the default Firebase app)
+    "DEFAULT_FIREBASE_APP": None,
+     # default: _('FCM Django')
+    "APP_VERBOSE_NAME": "[string for AppConfig's verbose_name]",
+     # true if you want to have only one active device per registered user at a time
+     # default: False
+    "ONE_DEVICE_PER_USER": True,
+     # devices to which notifications cannot be sent,
+     # are deleted upon receiving error response from FCM
+     # default: False
+    "DELETE_INACTIVE_DEVICES": True,
+    # Transform create of an existing Device (based on registration id) into
+                # an update. See the section
+    # "Update of device with duplicate registration ID" for more details.
+    # default: False
+    # "UPDATE_ON_DUPLICATE_REG_ID": True/False,
+}
+CORS_ORIGIN_ALLOW_ALL = True
+# 1018233231527-lv75pm3pst4use7s30vd7rd9nk18ltb2.apps.googleusercontent.com
+# 1018233231527-lv75pm3pst4use7s30vd7rd9nk18ltb2.apps.googleusercontent.com
+    #   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

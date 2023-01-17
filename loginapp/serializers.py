@@ -84,11 +84,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
     # listingdata = getListingSerializer(many=True, read_only=True)
     class Meta:
         model = User
-        fields = ['id', 'email','username','email_varified','is_active','created_at','updated_at','auth_provider','profile_image',  'photo_url']
+        fields = ['id', 'email','username','email_varified','is_active','created_at','updated_at','auth_provider',"profile_image" , 'photo_url']
     def get_photo_url(self, User):
         request = self.context.get('request')
         photo_url = User.profile_image.url
-        return request.build_absolute_uri(photo_url)
+        return photo_url
 
 class UserChangePasswordSerlizer(serializers.Serializer):
     password = serializers.CharField(max_length=255, style= {'input_type':'password'}, write_only = True)
@@ -154,28 +154,28 @@ class LogoutSerializer(serializers.Serializer):
         except TokenError:
             self.fail('bad_token')
 
-class GoogleSocialAuthSerializer(serializers.Serializer):
-    auth_token = serializers.CharField()
+# class GoogleSocialAuthSerializer(serializers.Serializer):
+#     auth_token = serializers.CharField()
 
-    def validate_auth_token(self, auth_token):
-        user_data = google.Google.validate(auth_token)
-        try:
-            user_data['sub']
-        except:
-            raise serializers.ValidationError(
-                'The token is invalid or expired. Please login again.'
-            )
+#     def validate_auth_token(self, auth_token):
+#         user_data = google.Google.validate(auth_token)
+#         try:
+#             user_data['sub']
+#         except:
+#             raise serializers.ValidationError(
+#                 'The token is invalid or expired. Please login again.'
+#             )
 
-        if user_data['aud'] != os.environ.get('GOOGLE_CLIENT_ID'):
+#         if user_data['aud'] != os.environ.get('GOOGLE_CLIENT_ID'):
 
-            raise AuthenticationFailed('oops, who are you?')
+#             raise AuthenticationFailed('oops, who are you?')
 
-        user_id = user_data['sub']
-        email = user_data['email']
-        username = user_data['username']
-        provider = 'google'
+#         user_id = user_data['sub']
+#         email = user_data['email']
+#         username = user_data['username']
+#         provider = 'google'
 
-        return register_social_user(
-            provider=provider, user_id=user_id, email=email, usermname=username)
+#         return register_social_user(
+#             provider=provider, user_id=user_id, email=email, usermname=username)
 
 

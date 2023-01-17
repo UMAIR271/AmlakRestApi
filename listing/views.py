@@ -1,20 +1,19 @@
-from django.shortcuts import render
+
 from django.http import Http404
-from django.shortcuts import get_object_or_404
 # Create your views here.
 from rest_framework import status
 from rest_framework import generics
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from django.shortcuts import render
+from favourite.models import *
 from listing.serializers import *
 from django.db.models import Q
+from questionair.models import *
 from listing.models import listing
 from rest_framework import viewsets
 from rest_framework.response import Response
 from .mypagination import myCursorPagination
-from django.db.models import Max
 from loginapp.models import *
 from django.http import QueryDict
 from rest_framework.views import APIView
@@ -27,14 +26,28 @@ class ListingView(viewsets.ModelViewSet):
     parser_classes = (FormParser, MultiPartParser)
     pagination_class = myCursorPagination
 
+    
+class getallListing(APIView, myCursorPagination):
+    def get(self, request):
+        user_id = self.request.query_params.get('user_id')
+        data=listing.objects.all()
+        paginated_queryset=self.paginate_queryset(data, request, view=self)
+        serializer = getListingSerializer(paginated_queryset, many=True)
+        if user_id:
+            for i in serializer.data:
+                listing_id = i['id']
+                favouriteListing = FavouriteListing.objects.filter(listing = listing_id , user = user_id).values().first()
+                i["favouriteListing"] = favouriteListing
+        return self.get_paginated_response(serializer.data)
+        
+        
+
+
+
 class GetListingView(APIView):
     # permission_classes = [IsAuthenticated]
     serializer_class = getListingSerializer
-    
-
-
     def get_object(self):
-
         try:
             return listing.objects.get(id=self.kwargs.get('pk'))
             
@@ -42,18 +55,21 @@ class GetListingView(APIView):
             raise Http404
 
     def get(self, request, pk):
+        attach = []
         print(pk)
-        # user = request.user.id
-        # print(user)
+        user_id = self.request.query_params.get('user_id')
         snippet = self.get_object()
-        print(snippet)
         serializer = self.serializer_class(snippet)
         pub=Listing_Amenities.objects.filter(listing =  pk).select_related("Amenities_ID").values("Amenities_ID__id","Amenities_ID__Amenities_Name" )
         data = serializer.data
-        print(data)
         data['Amenities_ID__Amenities_Name'] = pub
-        print(pub)
-        print(type(data))
+        attached_ques = ListingQuestion.objects.filter(listing_id = pk).values()
+        data["attached_question"] = attached_ques
+        if user_id:
+          interested_data = interestedUser.objects.filter(interested_user_id = user_id, listing_id = pk ).values().first()
+          data["interested_data"] = interested_data
+          favouriteListing = FavouriteListing.objects.filter(listing = pk , user = user_id).values().first()
+          data["favouriteListing"] = favouriteListing
         return Response(data)
 
     def put(self, request, pk):
@@ -88,7 +104,10 @@ class MylistingView(APIView):
                     pub=Listing_Amenities.objects.filter(listing =  i.id).select_related("Amenities_ID").values("Amenities_ID__id","Amenities_ID__Amenities_Name" )
                     data = serializer.data
                     data['Amenities_ID__Amenities_Name'] = pub
+                    favouriteListing = FavouriteListing.objects.filter(listing = i.id, user = user).values().first()
+                    data["favouriteListing"] = favouriteListing
                     mylisting.append(data)
+
                 return Response(mylisting) 
             else:
                 return Response({"message":"no listing"}, status=status.HTTP_404_NOT_FOUND) 
@@ -104,14 +123,22 @@ class ListMediaUdate(generics.RetrieveUpdateDestroyAPIView):
     queryset = Listing_Media.objects.all()
     serializer_class = Listing_MediaSerializer
 
-class FindProperty(viewsets.ModelViewSet):
+class FindProperty(APIView):
     serializer_class = getListingSerializer
 
-    def get_queryset(self):
-        query = self.request.query_params.get('query')
+    def get(self, request):
+        search = self.request.query_params.get('query')
+        user_id = self.request.query_params.get('user_id')
         try:
-                query = listing.objects.filter(Q(project_name__contains = query) | Q(street_Address__contains = query))
-                return query
+                query = listing.objects.filter(Q(project_name__contains = search) | Q(street_Address__contains = search))
+                serializer = self.serializer_class(query,many=True)
+                data = serializer.data
+                if user_id:
+                    for i in serializer.data:
+                        listing_id = i['id']
+                        favouriteListing = FavouriteListing.objects.filter(listing = listing_id , user = user_id).values().first()
+                        i["favouriteListing"] = favouriteListing
+                return Response(data)
 
         except listing.DoesNotExist:
             raise Http404
@@ -151,7 +178,7 @@ class UpdateAmenitiesView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class AddListingPostData(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     serializer_list = postListingSerializer
     serializer_property = porpertyTypeSerializer
     serializer_image = Listing_MediaSerializer
@@ -206,6 +233,9 @@ class AddListingPostData(APIView):
                 if  serializer1.is_valid(raise_exception=True):
                     serializer1.save()  
                     id=serializer1.data['id']
+                    cover_image ="http://18.177.139.152/uploads/"+str(images[0])
+                    slider = listing.objects.filter(id = id).update(cover_image = cover_image )
+                    print(slider)
                 else:
                         return Response({"message":"enter the listing"}, status=status.HTTP_400_BAD_REQUEST)
             else:
@@ -276,8 +306,6 @@ class AddListingPostData(APIView):
                         return Response({"message":"enter the verify Plane Image"}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 pass
-
-
             return Response({"listing_id":id},status=status.HTTP_200_OK)
         except listing.DoesNotExist:
             raise Http404

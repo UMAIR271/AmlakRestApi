@@ -14,6 +14,8 @@ urlpatterns = [
     path('profile/', UserProfileView.as_view() , name= "profile"),
     path('changepassword/', UserChangePasswordView.as_view() , name= "changepassword"),
     path('forgortpassword/', ChangePasswordView.as_view(), name='change-password'),
-    path('google/',  GoogleSocialAuthView.as_view() , name= "google"),
+    path('apple/', AppleSocialAuthView.as_view(), name="apple")
+
+    # path('google/',  GoogleSocialAuthView.as_view() , name= "google"),
 
 ]

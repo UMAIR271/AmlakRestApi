@@ -7,6 +7,7 @@ class myCursorPagination(PageNumberPagination):
     page_size = 7
     def get_paginated_response(self, data):
         try:
+            print(data)
             return Response({
                 'links': {
                 'next': self.get_next_link(),
