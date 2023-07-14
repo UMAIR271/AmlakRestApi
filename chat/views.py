@@ -86,26 +86,7 @@ class message_list(APIView):
         sender = request.user.id
         receiver = pk
         try:
-            messages = Message.objects.filter(sender = sender, receiver = receiver ).order_by("-timestamp") | Message.objects.filter(sender = receiver, receiver = sender).order_by('-timestamp')
-            # print(messages)
-            # print(type(messages))
-            # print(sender)
-            # for i in messages:
-            #     message = []
-            #     print(i)
-            #     print(i.sender.id)
-            #     if i.sender.id == sender:
-            #         id = i.receiver.id
-            #         user=User.objects.filter(id = id ).values_list("profile_image", "username")
-            #         for j in i:
-            #             print(j)
-            #         # i["username"] = user[0][1]
-            #         # print(i)
-            #         # print("reciver pic or name",user)
-            #         # print("token_user", sender, "sender_id", i.sender, "recevier_id", i.receiver)
-            #     elif i.receiver.id == sender:
-            #         print("sender pic or name")
-                    
+            messages = Message.objects.filter(sender = sender, receiver = receiver ).order_by("-timestamp") | Message.objects.filter(sender = receiver, receiver = sender).order_by('-timestamp')                    
             serializer = MessageSerializer(messages, many=True, context={'request': request})
             return JsonResponse(serializer.data, safe=False)
         except chat_inbox.DoesNotExist:
