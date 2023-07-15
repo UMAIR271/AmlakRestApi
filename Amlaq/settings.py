@@ -55,7 +55,6 @@ INSTALLED_APPS = [
     "questionair",
     'Notifications',
     'social_django',
-    "fcm_django",
     'chat',
 ]
 

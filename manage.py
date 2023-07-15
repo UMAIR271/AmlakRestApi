@@ -2,11 +2,11 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
-import dotenv
-
+import os
+from dotenv import load_dotenv
 
 def main():
-    dotenv.read_dotenv()
+    load_dotenv()
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Amlaq.settings')
     try:
         from django.core.management import execute_from_command_line
