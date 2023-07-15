@@ -161,7 +161,7 @@ class Listing_Media(models.Model):
 
 
     def __str__(self) -> str:
-        return (self.images_path)
+        return (self.images_Url.url)
 
 class floorPlane(models.Model):
     floorPlaneImage = models.ImageField(upload_to ='uploads/')
@@ -220,10 +220,11 @@ class Appointment(models.Model):
     user2 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="second_user")
     listing = models.ForeignKey(listing, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now=True)
-    status = models.CharField(max_length=50, choices=STATUS)
+    status = models.CharField(max_length=50, choices=STATUS, default=NULL)
+
 
     def __str__(self):
-        return self.STATUS
+        return self.status
 
 
 class AvailableSlots(models.Model):
@@ -239,5 +240,5 @@ class AvailableSlots(models.Model):
     slot_status = models.CharField(max_length=50, choices=SLOT_STATUS)
     
     def __str__(self):
-        return self.SLOT_STATUS
+        return self.slot_status
 
