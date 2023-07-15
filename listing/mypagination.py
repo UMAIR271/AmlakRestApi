@@ -2,24 +2,23 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 
-
-class myCursorPagination(PageNumberPagination):
+class MyCursorPagination(PageNumberPagination):
     page_size = 7
+
     def get_paginated_response(self, data):
         try:
-            print(data)
             return Response({
                 'links': {
-                'next': self.get_next_link(),
-                'previous': self.get_previous_link()
+                    'next': self.get_next_link(),
+                    'previous': self.get_previous_link()
                 },
                 'count': self.page.paginator.count,
                 'total_pages': self.page.paginator.num_pages,
                 'results': data
             })
-        except:
-    # return here any message you want
+        except Exception as e:
+            # Log or handle the exception appropriately
             return Response({
-                "code": 400,
-                "error": "Page out of range"
-            })
+                'error': 'An error occurred during pagination',
+                'details': str(e)
+            }, status=500)

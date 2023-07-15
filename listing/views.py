@@ -13,7 +13,7 @@ from questionair.models import *
 from listing.models import listing
 from rest_framework import viewsets
 from rest_framework.response import Response
-from .mypagination import myCursorPagination
+from .mypagination import MyCursorPagination
 from loginapp.models import *
 from django.http import QueryDict
 from rest_framework.views import APIView
@@ -24,10 +24,10 @@ class ListingView(viewsets.ModelViewSet):
     queryset = listing.objects.all()
     serializer_class = getListingSerializer
     parser_classes = (FormParser, MultiPartParser)
-    pagination_class = myCursorPagination
+    pagination_class = MyCursorPagination
 
     
-class getallListing(APIView, myCursorPagination):
+class getallListing(APIView, MyCursorPagination):
     def get(self, request):
         user_id = self.request.query_params.get('user_id')
         data=listing.objects.all()
@@ -403,7 +403,7 @@ class filterView(generics.ListAPIView):
             if min_price == '':
                 min_price = 0
             if min_price == '':
-                queryset = queryset.all().aggregate(Max('property_pricing'))
+                queryset = queryset.all().aggregate(max('property_pricing'))
             if min_price and max_price:
                 queryset = queryset.filter(property_pricing__range=(min_price,max_price))
             if check_property_size:
