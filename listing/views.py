@@ -233,7 +233,7 @@ class AddListingPostData(APIView):
                 if  serializer1.is_valid(raise_exception=True):
                     serializer1.save()  
                     id=serializer1.data['id']
-                    cover_image ="http://18.177.139.152/uploads/"+str(images[0])
+                    cover_image ="https://umair2701.pythonanywhere.com/uploads/"+str(images[0])
                     slider = listing.objects.filter(id = id).update(cover_image = cover_image )
                     print(slider)
                 else:
