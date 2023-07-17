@@ -79,9 +79,6 @@ class UserLoginSerializer(serializers.ModelSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     photo_url = serializers.SerializerMethodField()
-    # image_url = serializers.ImageField(source="profile_image", read_only=True)
-    # userdata = UserRegistrationSerializer(many=True, read_only=True)
-    # listingdata = getListingSerializer(many=True, read_only=True)
     class Meta:
         model = User
         fields = ['id', 'email','username','email_varified','is_active','created_at','updated_at','auth_provider',"profile_image" , 'photo_url']
