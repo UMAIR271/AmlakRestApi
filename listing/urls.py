@@ -1,5 +1,6 @@
 from django.urls import path, include
 from listing.views import *
+from django.conf.urls.static import static
 from . import views
 urlpatterns = [
     path('get/', getallListing.as_view(), name='basic_view'),

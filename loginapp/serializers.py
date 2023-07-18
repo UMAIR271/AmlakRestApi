@@ -82,10 +82,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'email','username','email_varified','is_active','created_at','updated_at','auth_provider',"profile_image" , 'photo_url']
-    def get_photo_url(self, User):
+    def get_photo_url(self, user):
         request = self.context.get('request')
-        photo_url = User.profile_image.url
-        return photo_url
+        if user.profile_image:
+            return user.profile_image.url
+        return None
+
 
 class UserChangePasswordSerlizer(serializers.Serializer):
     password = serializers.CharField(max_length=255, style= {'input_type':'password'}, write_only = True)

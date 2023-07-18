@@ -69,7 +69,7 @@ class User(AbstractBaseUser):
     phone_otp = models.CharField(max_length=6, null= True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    profile_image = models.ImageField(upload_to ='uploads/', null = True)
+    profile_image = models.ImageField(upload_to='uploads/', null=True, blank=True)
     auth_provider = models.CharField(
         max_length=255, blank=False,
         null=False, default=AUTH_PROVIDERS.get('email')
